@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive JS & TS Interview Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals (Slate, Gray, with a Teal accent) -->
+    <!-- Application Structure Plan: A sidebar-based navigation SPA. The sidebar lists all major interview topics from the guide. Clicking a topic instantly displays the relevant detailed content, including explanations, diagrams, and interactive demos, in the main content area. This structure was chosen to allow for non-linear, focused learning, which is ideal for interview preparation, as users can jump directly to topics they need to revise. It's more efficient than scrolling through a long document. -->
+    <!-- Visualization & Content Choices: Event Loop -> Goal: Demystify async flow -> Presentation: Animated text-based diagram -> Interaction: 'Run Simulation' button that visually steps through the code execution, showing items moving between the Call Stack, Web APIs, and Queues. Justification: Makes an abstract concept concrete and memorable. Method: Vanilla JS DOM manipulation. Performance Patterns -> Goal: Demonstrate practical performance optimization -> Presentation: Live, side-by-side interactive demos -> Interaction: Real input fields for Debounce/Throttle to show the effect in real-time. Justification: Proves understanding beyond theory. Method: Vanilla JS with setTimeout. Call Stack -> Goal: Explain execution order -> Presentation: Animated text-based diagram -> Interaction: 'Next Step' button to push/pop visual blocks representing execution contexts. Justification: Clarifies the LIFO nature of the stack. Method: Vanilla JS DOM manipulation. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .nav-link.active {
+            background-color: #0d9488; /* teal-600 */
+            color: white;
+        }
+        .code-block {
+            background-color: #f3f4f6;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #111827;
+        }
+        .diagram-block {
+            background-color: #e5e7eb;
+            border-left: 4px solid #0d9488;
+            padding: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .interactive-box {
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        .call-stack-item {
+            transition: all 0.3s ease-in-out;
+            border: 1px solid #9ca3af;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-slate-800 text-white p-4 flex-shrink-0 overflow-y-auto">
+            <h1 class="text-xl font-bold mb-6">JS & TS Guide</h1>
+            <nav id="navigation" class="space-y-2">
+                <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Part 1: Core Mechanics</h2>
+                    <a href="#" data-topic="context" class="nav-link block p-2 rounded-md hover:bg-slate-700 transition-colors">Execution Context & Stack</a>
+                    <a href="#" data-topic="hoisting" class="nav-link block p-2 rounded-md hover:bg-slate-700 transition-colors">Hoisting & Scope</a>
+                    <a href="#" data-topic="closures" class="nav-link block p-2 rounded-md hover:bg-slate-700 transition-colors">Closures</a>
+                </div>
+                <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-4 mb-2">Part 2: Async & Event Loop</h2>
+                    <a href="#" data-topic="event-loop" class="nav-link block p-2 rounded-md hover:bg-slate-700 transition-colors">Event Loop</a>
+                </div>
+                <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-4 mb-2">Part 3 & 4: Functions & 'this'</h2>
+                    <a href="#" data-topic="functions" class="nav-link block p-2 rounded-md hover:bg-slate-700 transition-colors">Functions In-Depth</a>
+                    <a href="#" data-topic="this-keyword" class="nav-link block p-2 rounded-md hover:bg-slate-700 transition-colors">'this' Keyword</a>
+                </div>
+                 <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-4 mb-2">Part 5: TypeScript</h2>
+                    <a href="#" data-topic="typescript" class="nav-link block p-2 rounded-md hover:bg-slate-700 transition-colors">TypeScript In-Depth</a>
+                </div>
+                <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-4 mb-2">Part 6: Advanced JS</h2>
+                    <a href="#" data-topic="performance" class="nav-link block p-2 rounded-md hover:bg-slate-700 transition-colors">Performance Patterns</a>
+                    <a href="#" data-topic="memory" class="nav-link block p-2 rounded-md hover:bg-slate-700 transition-colors">Memory Management</a>
+                    <a href="#" data-topic="patterns" class="nav-link block p-2 rounded-md hover:bg-slate-700 transition-colors">Design Patterns</a>
+                </div>
+                <div>
+                    <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-4 mb-2">Part 7: Browser APIs</h2>
+                    <a href="#" data-topic="browser-apis" class="nav-link block p-2 rounded-md hover:bg-slate-700 transition-colors">Browser APIs</a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 lg:p-8 overflow-y-auto">
+            
+            <!-- Welcome Section -->
+            <section id="welcome" class="content-section">
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <h2 class="text-3xl font-bold text-slate-900 mb-4">Welcome to the Interactive Guide</h2>
+                    <p class="text-lg text-slate-600">
+                        This application transforms your interview notes into an active learning tool. Select a topic from the sidebar to begin. Complex concepts include interactive demos to solidify your understanding. Good luck with your preparation!
+                    </p>
+                </div>
+            </section>
+
+            <!-- Part 1: Execution Context & Stack -->
+            <section id="context" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-slate-900">Execution Context & Call Stack</h2>
+                <p>Everything in JavaScript happens inside an Execution Context. It's a container with two parts: a Memory Component (for variables/functions) and a Code Component (where code runs). The Call Stack manages these contexts in a Last-In, First-Out (LIFO) order.</p>
+                <div class="interactive-box bg-white">
+                    <h3 class="text-xl font-semibold mb-4">Interactive Call Stack</h3>
+                    <p class="mb-4">Click "Next Step" to see how the Call Stack changes as the code executes.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="code-block" id="call-stack-code">
+function getFullName(firstName, lastName) {
+  return `${firstName} ${lastName}`;
+}
+
+function greet() {
+  const fullName = getFullName("John", "Doe");
+  console.log(`Hello, ${fullName}!`);
+}
+
+greet();
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div id="call-stack-visualization" class="w-full max-w-xs h-64 bg-slate-100 rounded-lg p-2 flex flex-col-reverse justify-start gap-2">
+                                <!-- Stack items will be added here -->
+                            </div>
+                            <span class="mt-2 font-semibold text-slate-600">CALL STACK</span>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button id="call-stack-step-btn" class="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700">Start</button>
+                        <button id="call-stack-reset-btn" class="bg-slate-500 text-white px-4 py-2 rounded-md hover:bg-slate-600">Reset</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Part 1: Hoisting & Scope -->
+            <section id="hoisting" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-slate-900">Hoisting, Scope, & The Scope Chain</h2>
+                <p>Hoisting moves declarations to the top during the creation phase. `let` and `const` are hoisted but remain in the Temporal Dead Zone (TDZ). The Scope Chain is how JavaScript looks for variables, moving from the local scope outwards to the global scope.</p>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-xl font-semibold mb-2">Visualizing the Scope Chain</h3>
+                    <p class="mb-4">When `inner()` runs, it can access variables from its own scope, `outer()`'s scope, and the Global scope.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="code-block">
+const globalVar = "I'm global";
+
+function outer() {
+  const outerVar = "I'm in outer";
+
+  function inner() {
+    console.log(outerVar);
+    console.log(globalVar);
+  }
+  inner();
+}
+                        </div>
+                        <div class="diagram-block">
+[ inner() Scope ]
+      |
+      |
+      v
+[ outer() Scope ]
+      |
+      |
+      v
+[ Global Scope ]
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Part 1: Closures -->
+            <section id="closures" class="content-section space-y-6">
+                 <h2 class="text-3xl font-bold text-slate-900">Closures</h2>
+                 <p>A closure is a function bundled with its lexical environment, allowing it to "remember" variables from the scope where it was created, even after that scope has closed.</p>
+                 <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-xl font-semibold mb-2">Practical Use Case: Private State</h3>
+                    <p class="mb-4">The `createCounter` function returns an object with methods that have a closure over the `count` variable. This makes `count` private and only accessible through the returned methods.</p>
+                    <div class="code-block">
+function createCounter() {
+  let count = 0;
+
+  return {
+    increment: () => { count++; return count; },
+    decrement: () => { count--; return count; }
+  };
+}
+
+const counter = createCounter();
+// console.log(counter.increment()); // 1
+// console.log(counter.increment()); // 2
+// console.log(count); // ReferenceError
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Part 2: Event Loop -->
+            <section id="event-loop" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-slate-900">The Event Loop</h2>
+                <p>JavaScript is single-threaded but handles concurrency via the Event Loop, which coordinates between the Call Stack, Web APIs, and the Microtask/Macrotask Queues.</p>
+                <div class="interactive-box bg-white">
+                    <h3 class="text-xl font-semibold mb-4">Interactive Event Loop Simulation</h3>
+                    <p class="mb-4">Click "Run Simulation" to see how async code is processed. The Microtask Queue (Promises) always has priority over the Macrotask Queue (setTimeout).</p>
+                    <div class="code-block mb-4">
+console.log('1. Sync Start');
+
+setTimeout(() => {
+  console.log('4. setTimeout (Macrotask)');
+}, 0);
+
+Promise.resolve().then(() => {
+  console.log('3. Promise (Microtask)');
+});
+
+console.log('2. Sync End');
+                    </div>
+                    <button id="event-loop-run-btn" class="bg-teal-600 text-white px-4 py-2 rounded-md hover:bg-teal-700">Run Simulation</button>
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-2 bg-slate-100 rounded">
+                            <h4 class="font-bold text-center">Call Stack</h4>
+                            <div id="event-loop-stack" class="text-sm space-y-1 mt-2"></div>
+                        </div>
+                        <div class="p-2 bg-slate-100 rounded">
+                            <h4 class="font-bold text-center">Microtask Queue</h4>
+                            <div id="event-loop-micro" class="text-sm space-y-1 mt-2"></div>
+                        </div>
+                        <div class="p-2 bg-slate-100 rounded">
+                            <h4 class="font-bold text-center">Macrotask Queue</h4>
+                            <div id="event-loop-macro" class="text-sm space-y-1 mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="mt-4 p-2 bg-gray-800 text-white rounded font-mono">
+                        <h4 class="font-bold mb-2">Console Output:</h4>
+                        <div id="event-loop-output"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Part 3 & 4: Functions & 'this' -->
+            <section id="functions" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-slate-900">Functions In-Depth</h2>
+                <div class="bg-white p-6 rounded-xl shadow-md space-y-4">
+                    <div>
+                        <h3 class="text-xl font-semibold">Function Statements vs. Expressions</h3>
+                        <p class="mb-2">Statements are fully hoisted (you can call them before they are defined). Expressions are not (the variable is hoisted, but the function body isn't assigned until that line is reached).</p>
+                        <div class="code-block">
+// Function Statement (Hoisted)
+console.log(statement("World")); // "Hello, World"
+function statement(name) {
+  return `Hello, ${name}`;
+}
+
+// Function Expression (Not Hoisted)
+// console.log(expression("World")); // Throws TypeError
+const expression = function(name) {
+  return `Hi, ${name}`;
+};
+console.log(expression("World")); // "Hi, World"
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold">Parameters vs. Arguments</h3>
+                        <p class="mb-2">Parameters are the variable names in the function's definition. Arguments are the actual values passed to the function when it's called.</p>
+                        <div class="code-block">
+// 'param1' and 'param2' are PARAMETERS
+function add(param1, param2) {
+  return param1 + param2;
+}
+
+// 10 and 20 are ARGUMENTS
+const result = add(10, 20); // result is 30
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold">First-Class & Higher-Order Functions</h3>
+                        <p class="mb-2">Functions can be treated like any other value. A higher-order function is one that takes a function as an argument, or returns a function.</p>
+                        <div class="code-block">
+// 1. Function assigned to a variable (First-Class)
+const greet = function() { console.log("Hello!"); };
+
+// 2. 'operate' is a Higher-Order Function
+//    It takes a function ('operation') as an argument.
+function operate(a, b, operation) {
+  return operation(a, b);
+}
+
+function add(x, y) { return x + y; }
+function multiply(x, y) { return x * y; }
+
+// Pass 'add' and 'multiply' functions as arguments
+console.log(operate(5, 3, add));      // 8
+console.log(operate(5, 3, multiply)); // 15
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="this-keyword" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-slate-900">'this' Keyword</h2>
+                <p>The value of `this` is determined by how a function is called. Arrow functions are special: they lexically inherit `this` from their parent scope.</p>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-xl font-semibold mb-2">Arrow Functions vs. Regular Functions</h3>
+                    <p class="mb-4">This example shows how a regular function loses its `this` context inside `setTimeout`, while an arrow function retains it.</p>
+                    <div class="code-block">
+class Person {
+  constructor(name) { this.name = name; }
+
+  greetLaterWrong() {
+    setTimeout(function() {
+      // 'this' is window or undefined in strict mode
+      console.log(`Hello from ${this.name}`); 
+    }, 500);
+  }
+
+  greetLaterRight() {
+    setTimeout(() => {
+      // 'this' is inherited from the Person instance
+      console.log(`Hello from ${this.name}`);
+    }, 1000);
+  }
+}
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Part 5: TypeScript -->
+            <section id="typescript" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-slate-900">TypeScript In-Depth</h2>
+                <div class="bg-white p-6 rounded-xl shadow-md space-y-4">
+                    <div>
+                        <h3 class="text-xl font-semibold">`type` vs. `interface`</h3>
+                        <p>Use `interface` for object shapes and classes. Use `type` for primitives, unions, and tuples.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold">Generics</h3>
+                        <p>Create reusable, type-safe components that can work with a variety of types.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold">Advanced Utility Types</h3>
+                        <p>`Partial<T>`, `Readonly<T>`, and `Pick<T, K>` are powerful tools for creating new types from existing ones.</p>
+                        <div class="code-block">
+interface User { name: string; age: number; }
+
+// type PartialUser = { name?: string; age?: number; }
+const pUser: Partial<User> = { name: "John" };
+
+// type ReadonlyUser = { readonly name: string; readonly age: number; }
+const rUser: Readonly<User> = { name: "Jane", age: 30 };
+
+// type PickedUser = { name: string; }
+const pickedUser: Pick<User, "name"> = { name: "Doe" };
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Part 6: Performance -->
+            <section id="performance" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-slate-900">Performance Patterns</h2>
+                <div class="interactive-box bg-white">
+                    <h3 class="text-xl font-semibold mb-4">Debounce vs. Throttle</h3>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-semibold mb-2">Debounce Demo</h4>
+                            <p class="text-sm mb-2">Waits for you to stop typing before "firing".</p>
+                            <input id="debounce-input" type="text" placeholder="Type here..." class="w-full p-2 border rounded">
+                            <div class="mt-2 text-sm">
+                                <p>Raw Events: <span id="debounce-raw-count">0</span></p>
+                                <p>Debounced Events: <span id="debounce-debounced-count">0</span></p>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-2">Throttle Demo</h4>
+                            <p class="text-sm mb-2">Fires at most once every 500ms.</p>
+                            <div id="throttle-area" class="w-full h-24 bg-slate-200 rounded cursor-pointer flex items-center justify-center">
+                                <span class="text-slate-500">Move mouse here</span>
+                            </div>
+                            <div class="mt-2 text-sm">
+                                <p>Raw Events: <span id="throttle-raw-count">0</span></p>
+                                <p>Throttled Events: <span id="throttle-throttled-count">0</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Part 6: Memory -->
+            <section id="memory" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-slate-900">Memory Management & Leaks</h2>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <p class="mb-4">JavaScript has automatic garbage collection, but leaks can still occur. Be aware of common causes:</p>
+                    <ul class="list-disc list-inside space-y-2">
+                        <li><b>Lingering Event Listeners:</b> An event listener attached to a DOM element that is later removed, without detaching the listener first.</li>
+                        <li><b>Forgotten Timers:</b> A `setInterval` that is never cleared with `clearInterval` will keep its closure and referenced variables in memory forever.</li>
+                        <li><b>Detached DOM elements:</b> Storing a reference to a DOM node in a variable, but removing the node from the DOM, can prevent the node from being garbage collected.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- Part 6: Patterns -->
+            <section id="patterns" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-slate-900">Common Design Patterns</h2>
+                <div class="bg-white p-6 rounded-xl shadow-md space-y-4">
+                    <div>
+                        <h3 class="text-xl font-semibold">Module Pattern</h3>
+                        <p>Uses closures to create private state.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold">Singleton Pattern</h3>
+                        <p>Ensures a class only has one instance.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold">Observer Pattern</h3>
+                        <p>A subject maintains a list of observers and notifies them of state changes. RxJS is a powerful implementation of this.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Part 7: Browser APIs -->
+            <section id="browser-apis" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-slate-900">Browser APIs & Environment</h2>
+                <div class="bg-white p-6 rounded-xl shadow-md space-y-4">
+                    <div>
+                        <h3 class="text-xl font-semibold">Web Storage</h3>
+                        <p>`localStorage` persists after the browser closes. `sessionStorage` is cleared when the tab is closed.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold">Fetch API</h3>
+                        <p>A modern, Promise-based API for network requests.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold">Web Workers</h3>
+                        <p>Run scripts in a background thread to avoid freezing the UI with computationally intensive tasks.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navigation = document.getElementById('navigation');
+            const sections = document.querySelectorAll('.content-section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            function setActiveSection(topic) {
+                sections.forEach(section => {
+                    if (section.id === topic) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    if (link.dataset.topic === topic) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }
+
+            navigation.addEventListener('click', (e) => {
+                if (e.target.matches('.nav-link')) {
+                    e.preventDefault();
+                    const topic = e.target.dataset.topic;
+                    setActiveSection(topic);
+                }
+            });
+
+            // Set initial state
+            setActiveSection('welcome');
+            
+            // --- Interactive Demos ---
+
+            // 1. Call Stack Demo
+            const callStackDemo = {
+                stepBtn: document.getElementById('call-stack-step-btn'),
+                resetBtn: document.getElementById('call-stack-reset-btn'),
+                viz: document.getElementById('call-stack-visualization'),
+                currentStep: 0,
+                steps: [
+                    { text: 'greet()', action: 'push' },
+                    { text: 'getFullName()', action: 'push' },
+                    { text: 'getFullName()', action: 'pop' },
+                    { text: 'greet()', action: 'pop' },
+                    { text: 'Global', action: 'pop' }
+                ],
+                init() {
+                    this.stepBtn.addEventListener('click', () => this.next());
+                    this.resetBtn.addEventListener('click', () => this.reset());
+                    this.reset();
+                },
+                next() {
+                    if (this.currentStep < this.steps.length) {
+                        const step = this.steps[this.currentStep];
+                        if (step.action === 'push') {
+                            const el = document.createElement('div');
+                            el.className = 'call-stack-item bg-white p-2 rounded text-center shadow';
+                            el.textContent = step.text;
+                            this.viz.appendChild(el);
+                        } else {
+                            if (this.viz.lastChild) {
+                                this.viz.removeChild(this.viz.lastChild);
+                            }
+                        }
+                        this.currentStep++;
+                        this.stepBtn.textContent = 'Next Step';
+                    }
+                    if (this.currentStep >= this.steps.length) {
+                        this.stepBtn.disabled = true;
+                        this.stepBtn.textContent = 'Finished';
+                    }
+                },
+                reset() {
+                    this.viz.innerHTML = '<div class="call-stack-item bg-white p-2 rounded text-center shadow">Global Exec Ctx</div>';
+                    this.currentStep = 0;
+                    this.stepBtn.disabled = false;
+                    this.stepBtn.textContent = 'Start';
+                }
+            };
+            callStackDemo.init();
+
+            // 2. Event Loop Demo
+            const eventLoopDemo = {
+                runBtn: document.getElementById('event-loop-run-btn'),
+                stackEl: document.getElementById('event-loop-stack'),
+                microEl: document.getElementById('event-loop-micro'),
+                macroEl: document.getElementById('event-loop-macro'),
+                outputEl: document.getElementById('event-loop-output'),
+                init() {
+                    this.runBtn.addEventListener('click', () => this.run());
+                },
+                run() {
+                    this.reset();
+                    this.runBtn.disabled = true;
+                    const log = (el, msg, delay) => new Promise(resolve => setTimeout(() => {
+                        el.innerHTML += `<div class="p-1 bg-white rounded shadow-sm">${msg}</div>`;
+                        resolve();
+                    }, delay));
+                    
+                    const output = (msg, delay) => new Promise(resolve => setTimeout(() => {
+                        this.outputEl.innerHTML += `<div>${msg}</div>`;
+                        resolve();
+                    }, delay));
+
+                    const clear = (el, delay) => new Promise(resolve => setTimeout(() => {
+                        el.innerHTML = '';
+                        resolve();
+                    }, delay));
+
+                    (async () => {
+                        await log(this.stackEl, 'console.log("1...")', 100);
+                        await output('1. Sync Start', 300);
+                        await clear(this.stackEl, 300);
+
+                        await log(this.stackEl, 'setTimeout(...)', 300);
+                        await log(this.macroEl, 'setTimeout callback', 500);
+                        await clear(this.stackEl, 300);
+
+                        await log(this.stackEl, 'Promise.resolve().then(...)', 300);
+                        await log(this.microEl, 'Promise.then callback', 500);
+                        await clear(this.stackEl, 300);
+
+                        await log(this.stackEl, 'console.log("2...")', 300);
+                        await output('2. Sync End', 300);
+                        await clear(this.stackEl, 300);
+                        
+                        await log(this.stackEl, 'Promise.then callback', 500);
+                        await clear(this.microEl, 0);
+                        await output('3. Promise (Microtask)', 300);
+                        await clear(this.stackEl, 300);
+
+                        await log(this.stackEl, 'setTimeout callback', 500);
+                        await clear(this.macroEl, 0);
+                        await output('4. setTimeout (Macrotask)', 300);
+                        await clear(this.stackEl, 300);
+                        
+                        this.runBtn.disabled = false;
+                    })();
+                },
+                reset() {
+                    this.stackEl.innerHTML = '';
+                    this.microEl.innerHTML = '';
+                    this.macroEl.innerHTML = '';
+                    this.outputEl.innerHTML = '';
+                }
+            };
+            eventLoopDemo.init();
+
+            // 3. Performance Patterns Demo
+            const perfDemo = {
+                init() {
+                    this.initDebounce();
+                    this.initThrottle();
+                },
+                initDebounce() {
+                    const input = document.getElementById('debounce-input');
+                    const rawCountEl = document.getElementById('debounce-raw-count');
+                    const debouncedCountEl = document.getElementById('debounce-debounced-count');
+                    let rawCount = 0;
+                    let debouncedCount = 0;
+
+                    const debouncedFn = this.debounce(() => {
+                        debouncedCount++;
+                        debouncedCountEl.textContent = debouncedCount;
+                    }, 500);
+
+                    input.addEventListener('input', () => {
+                        rawCount++;
+                        rawCountEl.textContent = rawCount;
+                        debouncedFn();
+                    });
+                },
+                initThrottle() {
+                    const area = document.getElementById('throttle-area');
+                    const rawCountEl = document.getElementById('throttle-raw-count');
+                    const throttledCountEl = document.getElementById('throttle-throttled-count');
+                    let rawCount = 0;
+                    let throttledCount = 0;
+
+                    const throttledFn = this.throttle(() => {
+                        throttledCount++;
+                        throttledCountEl.textContent = throttledCount;
+                    }, 500);
+
+                    area.addEventListener('mousemove', () => {
+                        rawCount++;
+                        rawCountEl.textContent = rawCount;
+                        throttledFn();
+                    });
+                },
+                debounce(func, delay) {
+                    let timeoutId;
+                    return function(...args) {
+                        clearTimeout(timeoutId);
+                        timeoutId = setTimeout(() => {
+                            func.apply(this, args);
+                        }, delay);
+                    };
+                },
+                throttle(func, limit) {
+                    let inThrottle;
+                    return function(...args) {
+                        if (!inThrottle) {
+                            func.apply(this, args);
+                            inThrottle = true;
+                            setTimeout(() => inThrottle = false, limit);
+                        }
+                    };
+                }
+            };
+            perfDemo.init();
+        });
+    </script>
+</body>
+</html>
