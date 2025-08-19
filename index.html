@@ -6,8 +6,15 @@
     <title>Interactive JS & TS Interview Guide</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1e293b"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="JS/TS Guide">
+    <link id="manifest-link" rel="manifest">
+    
     <!-- Chosen Palette: Calm Neutrals (Slate, Gray, with a Teal accent) -->
-    <!-- Application Structure Plan: A sidebar-based navigation SPA. The sidebar lists all major interview topics from the guide. Clicking a topic instantly displays the relevant detailed content, including explanations, diagrams, and interactive demos, in the main content area. This structure was chosen to allow for non-linear, focused learning, which is ideal for interview preparation, as users can jump directly to topics they need to revise. It's more efficient than scrolling through a long document. -->
+    <!-- Application Structure Plan: A sidebar-based navigation SPA. The sidebar lists all major interview topics from the guide. On mobile, it becomes an off-canvas drawer. Clicking a topic instantly displays the relevant detailed content, including explanations, diagrams, and interactive demos, in the main content area. This structure was chosen to allow for non-linear, focused learning, which is ideal for interview preparation, as users can jump directly to topics they need to revise. It's more efficient than scrolling through a long document. -->
     <!-- Visualization & Content Choices: Event Loop -> Goal: Demystify async flow -> Presentation: Animated text-based diagram -> Interaction: 'Run Simulation' button that visually steps through the code execution, showing items moving between the Call Stack, Web APIs, and Queues. Justification: Makes an abstract concept concrete and memorable. Method: Vanilla JS DOM manipulation. Performance Patterns -> Goal: Demonstrate practical performance optimization -> Presentation: Live, side-by-side interactive demos -> Interaction: Real input fields for Debounce/Throttle to show the effect in real-time. Justification: Proves understanding beyond theory. Method: Vanilla JS with setTimeout. Call Stack -> Goal: Explain execution order -> Presentation: Animated text-based diagram -> Interaction: 'Next Step' button to push/pop visual blocks representing execution contexts. Justification: Clarifies the LIFO nature of the stack. Method: Vanilla JS DOM manipulation. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
@@ -50,13 +57,25 @@
             transition: all 0.3s ease-in-out;
             border: 1px solid #9ca3af;
         }
+        /* Mobile sidebar transition */
+        #sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
-    <div class="flex h-screen">
+    <div class="relative min-h-screen md:flex">
+        <!-- Mobile Header -->
+        <div class="bg-slate-800 text-white flex justify-between items-center p-4 md:hidden">
+            <h1 class="text-xl font-bold">JS & TS Guide</h1>
+            <button id="mobile-menu-button">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+
         <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 bg-slate-800 text-white p-4 flex-shrink-0 overflow-y-auto">
-            <h1 class="text-xl font-bold mb-6">JS & TS Guide</h1>
+        <aside id="sidebar" class="bg-slate-800 text-white w-64 p-4 space-y-6 fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 z-30">
+            <h1 class="text-xl font-bold mb-6 hidden md:block">JS & TS Guide</h1>
             <nav id="navigation" class="space-y-2">
                 <div>
                     <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Part 1: Core Mechanics</h2>
@@ -444,26 +463,46 @@ const pickedUser: Pick<User, "name"> = { name: "Doe" };
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- PWA Setup: Manifest ---
+            const manifest = {
+                "name": "JS & TS Interview Guide",
+                "short_name": "JS/TS Guide",
+                "start_url": ".",
+                "display": "standalone",
+                "background_color": "#f8fafc",
+                "theme_color": "#1e293b",
+                "description": "An interactive guide for JS and TS interview preparation.",
+                "icons": [
+                    { "src": "https://placehold.co/192x192/0d9488/FFFFFF?text=JS", "type": "image/png", "sizes": "192x192" },
+                    { "src": "https://placehold.co/512x512/0d9488/FFFFFF?text=JS", "type": "image/png", "sizes": "512x512" }
+                ]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+            const manifestURL = URL.createObjectURL(manifestBlob);
+            document.getElementById('manifest-link').setAttribute('href', manifestURL);
+            
+            // --- App Navigation and Interactivity ---
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
             const navigation = document.getElementById('navigation');
             const sections = document.querySelectorAll('.content-section');
             const navLinks = document.querySelectorAll('.nav-link');
 
+            mobileMenuButton.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+            });
+
             function setActiveSection(topic) {
                 sections.forEach(section => {
-                    if (section.id === topic) {
-                        section.classList.add('active');
-                    } else {
-                        section.classList.remove('active');
-                    }
+                    section.classList.toggle('active', section.id === topic);
                 });
-
                 navLinks.forEach(link => {
-                    if (link.dataset.topic === topic) {
-                        link.classList.add('active');
-                    } else {
-                        link.classList.remove('active');
-                    }
+                    link.classList.toggle('active', link.dataset.topic === topic);
                 });
+                // Close sidebar on mobile after navigation
+                if (window.innerWidth < 768) {
+                    sidebar.classList.add('-translate-x-full');
+                }
             }
 
             navigation.addEventListener('click', (e) => {
@@ -474,12 +513,9 @@ const pickedUser: Pick<User, "name"> = { name: "Doe" };
                 }
             });
 
-            // Set initial state
             setActiveSection('welcome');
             
             // --- Interactive Demos ---
-
-            // 1. Call Stack Demo
             const callStackDemo = {
                 stepBtn: document.getElementById('call-stack-step-btn'),
                 resetBtn: document.getElementById('call-stack-reset-btn'),
@@ -527,7 +563,6 @@ const pickedUser: Pick<User, "name"> = { name: "Doe" };
             };
             callStackDemo.init();
 
-            // 2. Event Loop Demo
             const eventLoopDemo = {
                 runBtn: document.getElementById('event-loop-run-btn'),
                 stackEl: document.getElementById('event-loop-stack'),
@@ -594,7 +629,6 @@ const pickedUser: Pick<User, "name"> = { name: "Doe" };
             };
             eventLoopDemo.init();
 
-            // 3. Performance Patterns Demo
             const perfDemo = {
                 init() {
                     this.initDebounce();
